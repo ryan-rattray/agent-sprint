@@ -3,7 +3,7 @@ from react import build_prompt, parse_action
 from tools import run_tool
 
 
-def run(question, max_iterations=3) -> dict:
+def run(question, max_iterations=8) -> dict:
     # returns {"answer": ..., "trace": [...]}
     # trace entries: {"thought": ..., "action": ..., "observation": ...}
 
@@ -33,7 +33,7 @@ def run(question, max_iterations=3) -> dict:
                         "Reply using exactly the format: Thought: ... Action: ... Action Input: ...")
             trace.append({"thought": None, "action": None, "observation": observation})
 
-        # If the parsed action is recieved, unpack thought/action/action_input, run the tool with the run_tool function
+        # If the parsed action is recieved, unpack thought/action, run the tool with the run_tool function
             # and log all three in the trace. The observation from the tool is then added to the prompt for the next iteration.
         else:
             action, action_input = parsed
@@ -74,13 +74,13 @@ if __name__ == "__main__":
 # for step in result["trace"]:
 #     print(step["observation"])
 
-if __name__ == "__main__":
-    result = run("What did I have for breakfast?", max_iterations=3)
-    print("ANSWER:", result["answer"])
-    print("iterations used:", len(result["trace"]))
+# if __name__ == "__main__":
+#     result = run("What did I have for breakfast?", max_iterations=3)
+#     print("ANSWER:", result["answer"])
+#     print("iterations used:", len(result["trace"]))
 
 # temp cap test (comment out after)
-from unittest.mock import patch
+# from unittest.mock import patch
 
 # def stub_ask(prompt):
 #     return "Thought: still looking\nAction: search\nAction Input: breakfast diary"
