@@ -8,6 +8,7 @@ import json
 import os
 import sys
 import urllib.request
+import time
 
 MODEL ="gemini-3.8-flash"
 ENDPOINT = f"https://generativelanguage.googleapis.com/v1beta/models/{MODEL}:generateContent"
@@ -31,7 +32,21 @@ def ask(prompt: str) -> str:
 
     return payload["candidates"][0]["content"]["parts"][0]["text"]
 
-
 if __name__ == "__main__":
     prompt = " ".join(sys.argv[1:]) or "Explain what a ReAct loop is in one sentence."
     print(ask(prompt))
+
+
+def ask_with_retry(prompt: str, tries: int = 3) -> str:
+    # Call ask(), retrying on HTTP 503 (model overloaded) with growing waits.
+    # Non-503 errors raise immediately; after `tries` failures the last 503 raises.
+    last_error = None
+    for attempt in range(tries):
+        try:
+            return ask(prompt)
+        except urllib.error.HTTPError as e:
+            if e.code != 503:
+                raise
+            last_error = e
+            time.sleep(2 ** attempt)  # 1s, then 2s, then 4s
+    raise last_error

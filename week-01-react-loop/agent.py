@@ -1,9 +1,9 @@
-from ask import ask
+from ask_gateway import ask_gateway
 from react import build_prompt, parse_action
 from tools import run_tool
 
 
-def run(question, max_iterations=8) -> dict:
+def run(question, max_iterations=3) -> dict:
     # returns {"answer": ..., "trace": [...]}
     # trace entries: {"thought": ..., "action": ..., "observation": ...}
 
@@ -18,7 +18,7 @@ def run(question, max_iterations=8) -> dict:
     # Each iteration represents a step in the ReAct loop where the model can think, act, and observe.
     # The entire conversation is accumulated in the prompt to provide context for the model's next response.
     for _ in range(max_iterations):
-        response = ask(prompt)  # with your 503 retry wrapped around this
+        response = ask_gateway(prompt)
 
         # If the model provides a final answer, return it along with the trace of reasoning steps.
         if "Final Answer:" in response:
@@ -55,4 +55,40 @@ if __name__ == "__main__":
     print("ANSWER:", result["answer"])
     for step in result["trace"]:
         print(step)
+
+# temp test, bottom of agent.py (delete after or comment out)
+# from unittest.mock import patch
+
+# calls = 0
+# real_ask = ask_gateway
+# def flaky_ask(prompt):
+#     global calls
+#     calls += 1
+#     if calls == 1:
+#         return "I think the answer is probably 42 or something"
+#     return real_ask(prompt)
+
+# with patch("agent.ask_gateway", flaky_ask):
+#     result = run("What is 15% of 240?")
+# print("ANSWER:", result["answer"])
+# for step in result["trace"]:
+#     print(step["observation"])
+
+if __name__ == "__main__":
+    result = run("What did I have for breakfast?", max_iterations=3)
+    print("ANSWER:", result["answer"])
+    print("iterations used:", len(result["trace"]))
+
+# temp cap test (comment out after)
+from unittest.mock import patch
+
+# def stub_ask(prompt):
+#     return "Thought: still looking\nAction: search\nAction Input: breakfast diary"
+
+# with patch("agent.ask_gateway", stub_ask):
+#     result = run("What did I have for breakfast?", max_iterations=3)
+# print("ANSWER:", result["answer"])
+# print("iterations used:", len(result["trace"]))
+
+
 

@@ -50,3 +50,5 @@ def parse_action(reply: str) -> tuple[str, str] | None:
     if not action_match or not input_match:
         return None
     return action_match.group(1), input_match.group(1).strip()
+
+#test parse_action with a sample reply
