@@ -30,6 +30,8 @@ Observation: 408
 Thought: I have the result of the computation.
 Final Answer: 408
 
+You must call at least one tool before giving your Final Answer, even if you think you know the answer.
+
 Question: {question}
 """
 import re
