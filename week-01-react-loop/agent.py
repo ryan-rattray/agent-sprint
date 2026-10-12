@@ -1,6 +1,7 @@
 from ask_gateway import ask_gateway
 from react import build_prompt, parse_action
 from tools import run_tool
+import re
 
 
 def run(question, max_iterations=8) -> dict:
@@ -20,6 +21,9 @@ def run(question, max_iterations=8) -> dict:
     for _ in range(max_iterations):
         response = ask_gateway(prompt)
 
+        thought_match = re.search(r"Thought:\s*(.+)", response)
+        thought = thought_match.group(1).strip() if thought_match else None
+
         # If the model provides a final answer, return it along with the trace of reasoning steps.
         if "Final Answer:" in response:
             answer = response.split("Final Answer:")[1].strip()
@@ -31,14 +35,14 @@ def run(question, max_iterations=8) -> dict:
         if parsed is None:
             observation = ("I couldn't parse an action from your last response. "
                         "Reply using exactly the format: Thought: ... Action: ... Action Input: ...")
-            trace.append({"thought": None, "action": None, "observation": observation})
+            trace.append({"thought": thought, "action": None, "observation": observation})
 
         # If the parsed action is recieved, unpack thought/action, run the tool with the run_tool function
             # and log all three in the trace. The observation from the tool is then added to the prompt for the next iteration.
         else:
             action, action_input = parsed
             observation = run_tool(action, action_input)
-            trace.append({"thought": None, "action": action, "observation": observation})
+            trace.append({"thought": thought, "action": action, "observation": observation})
 
         # This is the agent's memory of the conversation so far, including the original question, the model's reasoning, the actions
             # it took, and the observations it received. This context is crucial for the model to make informed decisions

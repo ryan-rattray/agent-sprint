@@ -36,6 +36,12 @@ _SEARCH_DB = {
 "capital of france": "Paris",
 "largest planet": "Jupiter",
 "python creator": "Guido van Rossum",
+"speed of light in m/s": "299792458",
+"seed of light in miles/hour": "670616629",
+"speed of sound in m/s": "343",
+"speed of sound in feet/second": "1125",
+"boiling point of water in degrees celsius": "100",
+"boiling point of water in degrees fahrenheit": "212",
 }
 
 def search(query):
