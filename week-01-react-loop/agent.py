@@ -11,46 +11,57 @@ def run(question, max_iterations=8) -> dict:
     # Build the initial prompt for the model, including the question.
     prompt = build_prompt(question)
 
-    # trace is a list of dicts, each representing a step in the reasoning process.  This is the log of what the model thought, what action
-        #  it took, and what observation it received.
+    # trace is a list of dicts, each representing a step in the reasoning process.
     trace = []
 
+    # tools_used is a counter to keep track of how many times the model has used external tools.
+    tools_used = 0
+
     # Loop for a maximum number of iterations to allow the model to reason and take actions.
-    # Each iteration represents a step in the ReAct loop where the model can think, act, and observe.
-    # The entire conversation is accumulated in the prompt to provide context for the model's next response.
     for _ in range(max_iterations):
         response = ask_gateway(prompt)
 
         thought_match = re.search(r"Thought:\s*(.+)", response)
         thought = thought_match.group(1).strip() if thought_match else None
 
-        # If the model provides a final answer, return it along with the trace of reasoning steps.
+        # If the model provides a final answer, return it along with the trace.
         if "Final Answer:" in response:
+            if tools_used == 0:
+                observation = ("You must call at least one tool before giving your "
+                            "Final Answer. Remember: "
+                            "Use the calculator for all arithmetic. "
+                            "Use the search tool to look up facts. "
+                            "What is your first action?")
+                trace.append({"thought": thought, "action": None, "observation": observation})
+                # Reset the prompt to the original question plus the correction.
+                # This prevents the model from getting confused by seeing its own
+                # premature Final Answer in the conversation history.
+                prompt = build_prompt(question)
+                prompt += f"\n{observation}\n"
+                continue
+
             answer = response.split("Final Answer:")[1].strip()
             return {"answer": answer, "trace": trace}
+
         parsed = parse_action(response)
 
-        # If nothing could be parsed, add an observation indicating the parsing failure and continue the loop.
-        # This observation is sent to the model in the next iteration to help it correct its response format.
+        # If nothing could be parsed, add an observation indicating the parsing failure.
         if parsed is None:
             observation = ("I couldn't parse an action from your last response. "
                         "Reply using exactly the format: Thought: ... Action: ... Action Input: ...")
             trace.append({"thought": thought, "action": None, "observation": observation})
 
-        # If the parsed action is recieved, unpack thought/action, run the tool with the run_tool function
-            # and log all three in the trace. The observation from the tool is then added to the prompt for the next iteration.
+        # If the parsed action is received, run the tool and log the result.
         else:
             action, action_input = parsed
             observation = run_tool(action, action_input)
+            tools_used += 1
             trace.append({"thought": thought, "action": action, "observation": observation})
 
-        # This is the agent's memory of the conversation so far, including the original question, the model's reasoning, the actions
-            # it took, and the observations it received. This context is crucial for the model to make informed decisions
-            # in subsequent iterations.
+        # Append the model's response and the observation to the prompt for context.
         prompt += f"\n{response}\nObservation: {observation}\n"
 
-    # If the loop completes without the model providing a final answer, return a message indicating that the maximum number of iterations
-        # was reached, along with the trace of reasoning steps.
+    # If the loop completes without a final answer, return a message indicating that.
     return {"answer": "Max iterations reached.", "trace": trace}
 
 # Test the run function with a sample question. This is useful for debugging and verifying that the ReAct loop behaves as expected.

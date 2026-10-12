@@ -30,6 +30,10 @@ Observation: 408
 Thought: I have the result of the computation.
 Final Answer: 408
 
+Use the calculator for all arithmetic. Never compute in your head.
+
+Use the search tool to look up facts. You can use the search tool multiple times if needed. Do not make up facts or go by memory.
+
 You must call at least one tool before giving your Final Answer, even if you think you know the answer.
 
 Question: {question}

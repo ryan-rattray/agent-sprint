@@ -37,16 +37,31 @@ _SEARCH_DB = {
 "largest planet": "Jupiter",
 "python creator": "Guido van Rossum",
 "speed of light in m/s": "299792458",
-"seed of light in miles/hour": "670616629",
+"speed of light in miles/hour": "670616629",
 "speed of sound in m/s": "343",
 "speed of sound in feet/second": "1125",
 "boiling point of water in degrees celsius": "100",
 "boiling point of water in degrees fahrenheit": "212",
+"average items on a desk": "7.3",
+"beeps in a microwave cycle": "4",
+"standard paperclip length in mm": "50",
+"teeth on a standard zipper per inch": "12",
+"average blinks per minute": "17",
+"hours to charge a forklift battery": "8.5",
 }
 
 def search(query):
-    """Stub search: look up a canned answer. Returns 'no results' when unknown."""
-    return _SEARCH_DB.get(query.strip().lower(), "no results")
+    q = query.strip().lower()
+    if q in _SEARCH_DB:
+        return _SEARCH_DB[q]
+    q_words = set(q.split())
+    best, best_score = None, 0
+    for key, val in _SEARCH_DB.items():
+        score = len(q_words & set(key.split()))
+        if score > best_score:
+            best, best_score = val, score
+    return best if best_score >= 2 else "no results"
+
 
 TOOLS = {
     "calculator": calculator,
