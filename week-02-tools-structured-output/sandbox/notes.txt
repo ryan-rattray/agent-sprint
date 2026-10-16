@@ -1,0 +1,3 @@
+My name is Ryan.  I am a CAE engineeer.
+I am embarking on a wild journey into the unknown.  
+I am learning how agents work by build one from scratch.
