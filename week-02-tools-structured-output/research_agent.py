@@ -10,6 +10,16 @@ from tools import TOOLS             # Registry of tool: name -> function
 
 MAX_ITERATIONS = 10 # Caps the loops to 10 iterations so a runaway model can't run on forever
 
+TRACE = True # Set to False to run quietly. True prints the full trace every turn.
+
+def show(label, text):
+    """Print one labeled trace section, but only when TRACE is on."""
+    if not TRACE:
+        return
+    print(label)
+    print(text)
+    print()
+
 # The prompt is the contract, now shorter than week 1 as JSON needs less explaining.
 # Also, the example is removed because JSON IS the example.
 PROMPT = """You are a research agent. You answer questions by using tools, then cite your sources.
@@ -48,9 +58,13 @@ def run(question, model=ask_gateway):
     prompt = PROMPT.replace("{question}", question)
 
     for turn in range(1, MAX_ITERATIONS +1):
+        # Prints the prompt the model sees at the begining of each turn if Trace = True
+        show(f"=== Turn {turn} ===\nPrompt:", prompt)
+
         reply = model(prompt)
-        #print(reply)  # Comment this out to not reprint the trace every time
-        
+
+        # Prints the models reply every turn if Trace = True
+        show("Model reply:", reply)
 
         # If model attempts a final answer, this checks it against the answer key.
         # The shape of the answer is validated before accepting it.
@@ -76,9 +90,11 @@ def run(question, model=ask_gateway):
                 fn = TOOLS[verdict["tool"]]
                 obs = observation_from(fn(**verdict["arguments"]))
 
+        # Prints the observation if Trace = True
+        show("Observation:", obs)
+
         # Append reply + Observation: the growing prompt is still the
         # agent's only memory, exactly as in Week 1.
-        #print(obs)    # Comment this out to not reprint the trace every time
         prompt += "\n" + reply + "\n" + obs + "\n"
 
     return {"answer": "max iterations reached", "citations": []}

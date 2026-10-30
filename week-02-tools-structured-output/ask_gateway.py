@@ -6,6 +6,8 @@ import keyring
 
 GATEWAY_URL = "https://ai-gateway.nexteer.app/v1/chat/completions"
 MODEL = "claude-sonnet-5"
+#MODEL = "deepseek-v4-pro"
+
 
 def ask_gateway(prompt: str) -> str:
     # Send *prompt* through the work gateway, return the model's text reply.
